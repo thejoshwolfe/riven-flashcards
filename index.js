@@ -4,12 +4,14 @@ var resultsThing = document.getElementById("resultsThing");
 var scoreSpan = document.getElementById("scoreSpan");
 
 var chosenNumber = null;
+var numberProficiency = {};
 var score = 0;
 
 var images = [];
 for (var i = 1; i <= 24; i++) {
   images[i] = new Image();
   images[i].src = "number_" + i + ".png";
+  numberProficiency[i] = 0;
 }
 
 inputBox.addEventListener("keydown", function(event) {
@@ -39,6 +41,7 @@ function submitAnswer(answer) {
   resultsThing.className = right ? "right" : "wrong";
   score += right ? 1 : -5;
   scoreSpan.innerHTML = score.toString();
+  numberProficiency[chosenNumber] += right ? 1 : -1;
 }
 
 function step() {
@@ -51,7 +54,16 @@ function step() {
 }
 function next() {
   lastUpdateTime = new Date();
-  chosenNumber = Math.floor(Math.random() * 24) + 1;
+  var numbers = Object.keys(numberProficiency);
+  shuffle(numbers);
+  numbers.sort(function(a, b) {
+    return operatorCompare(numberProficiency[a], numberProficiency[b]);
+  });
+  var chosenIndex = numbers.length - 1 - Math.floor(Math.sqrt(Math.random() * numbers.length * numbers.length));
+  chosenNumber = parseInt(numbers[chosenIndex], 10);
+}
+function operatorCompare(a, b) {
+  return a < b ? -1 : a > b ? 1 : 0;
 }
 
 function render() {
@@ -71,5 +83,13 @@ function render() {
 
   if (chosenNumber != null) {
     context.drawImage(images[chosenNumber], 200 + 100 - 61/2, 100 - 51/2, 61, 51);
+  }
+}
+function shuffle(array) {
+  for (var i = 0; i < array.length - 1; i++) {
+    var j = Math.floor(Math.random() * (array.length - i)) + i;
+    var tmp = array[j];
+    array[j] = array[i];
+    array[i] = tmp;
   }
 }
